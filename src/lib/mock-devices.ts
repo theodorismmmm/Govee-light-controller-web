@@ -21,6 +21,43 @@ export const MOCK_DEVICES: DeviceView[] = [
     },
   },
   {
+    sku: "H605C",
+    device: "AA:BB:CC:DD:EE:05",
+    deviceName: "Living Room Lamp 2",
+    type: "devices.types.light",
+    capabilities: [
+      { type: "devices.capabilities.on_off", instance: "powerSwitch" },
+      { type: "devices.capabilities.range", instance: "brightness" },
+      { type: "devices.capabilities.color_setting", instance: "colorRgb" },
+      { type: "devices.capabilities.color_setting", instance: "colorTemperatureK" },
+    ],
+    state: {
+      power: true,
+      brightness: 68,
+      color: { r: 255, g: 200, b: 140 },
+      colorTem: 3200,
+      online: true,
+    },
+  },
+  {
+    sku: "SameModeGroup",
+    device: "90010001",
+    deviceName: "Living Room Pair",
+    capabilities: [
+      { type: "devices.capabilities.on_off", instance: "powerSwitch" },
+      { type: "devices.capabilities.range", instance: "brightness" },
+      { type: "devices.capabilities.color_setting", instance: "colorRgb" },
+      { type: "devices.capabilities.color_setting", instance: "colorTemperatureK" },
+    ],
+    state: {
+      power: true,
+      brightness: 70,
+      color: { r: 255, g: 200, b: 140 },
+      colorTem: 3200,
+      online: true,
+    },
+  },
+  {
     sku: "H615A",
     device: "AA:BB:CC:DD:EE:02",
     deviceName: "Desk Strip",

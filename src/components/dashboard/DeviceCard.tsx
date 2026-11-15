@@ -21,6 +21,18 @@ export function DeviceCard({
   const glow = state.power
     ? `0 0 28px ${hex}55, inset 0 0 0 1px rgba(255,255,255,0.08)`
     : "inset 0 0 0 1px rgba(255,255,255,0.06)";
+  const isGroup =
+    device.kind === "sameModeGroup" ||
+    device.kind === "baseGroup" ||
+    device.kind === "modelGroup";
+  const meta =
+    device.kind === "sameModeGroup"
+      ? "Same model group"
+      : device.kind === "baseGroup"
+        ? "Basic group"
+        : device.kind === "modelGroup"
+          ? `${device.memberCount ?? 0} lights · ${device.sku}`
+          : `${device.sku} · ${state.online ? "Online" : "Offline"}`;
 
   return (
     <div
@@ -42,14 +54,17 @@ export function DeviceCard({
     >
       <div className="relative z-10 flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className="truncate font-semibold tracking-tight">
-            {device.deviceName || device.sku}
+          <div className="flex items-center gap-2">
+            <div className="truncate font-semibold tracking-tight">
+              {device.deviceName || device.sku}
+            </div>
+            {isGroup ? (
+              <span className="shrink-0 rounded-full border border-white/20 px-2 py-0.5 text-[10px] uppercase tracking-[0.12em] text-[var(--fg-dim)]">
+                Group
+              </span>
+            ) : null}
           </div>
-          <div className="mt-1 text-xs text-[var(--fg-dim)]">
-            {device.sku}
-            <span className="mx-2 text-white/20">·</span>
-            {state.online ? "Online" : "Offline"}
-          </div>
+          <div className="mt-1 text-xs text-[var(--fg-dim)]">{meta}</div>
         </div>
 
         <button

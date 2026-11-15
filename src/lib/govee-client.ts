@@ -1,5 +1,10 @@
 import type { DeviceState, DeviceView, GoveeDevice } from "./types";
 import { deviceKey, parseStateFromCapabilities } from "./govee-parse";
+import {
+  annotateDevice,
+  buildSyntheticModelGroups,
+  isGoveeGroupSku,
+} from "./groups";
 import { MOCK_DEVICES } from "./mock-devices";
 import { getApiKey, isDemoMode } from "./storage";
 import { packRgb } from "./govee-color";
@@ -20,9 +25,21 @@ async function api(
   });
 }
 
+function withSyntheticGroups(devices: DeviceView[]): DeviceView[] {
+  const annotated = devices.map(annotateDevice);
+  const physical = annotated.filter((d) => d.kind === "device");
+  const apiGroups = annotated.filter(
+    (d) => d.kind === "sameModeGroup" || d.kind === "baseGroup",
+  );
+  // Local same-model groups fan out to every light sharing a SKU.
+  // API SameModeGroup / BaseGroup entries are controlled as Govee group IDs.
+  const synthetic = buildSyntheticModelGroups(physical);
+  return [...apiGroups, ...synthetic, ...physical];
+}
+
 export async function fetchDevices(): Promise<DeviceView[]> {
   if (isDemoMode()) {
-    return structuredClone(MOCK_DEVICES);
+    return withSyntheticGroups(structuredClone(MOCK_DEVICES));
   }
 
   const res = await api("/api/govee/devices");
@@ -35,18 +52,25 @@ export async function fetchDevices(): Promise<DeviceView[]> {
   const devices = json.devices ?? [];
   const withState = await Promise.all(
     devices.map(async (device) => {
-      try {
-        const state = await fetchDeviceState(device.sku, device.device);
-        return { ...device, state };
-      } catch {
-        return {
+      // SameModeGroup / BaseGroup cannot be polled via /device/state.
+      if (isGoveeGroupSku(device.sku)) {
+        return annotateDevice({
           ...device,
           state: parseStateFromCapabilities(device.capabilities),
-        };
+        });
+      }
+      try {
+        const state = await fetchDeviceState(device.sku, device.device);
+        return annotateDevice({ ...device, state });
+      } catch {
+        return annotateDevice({
+          ...device,
+          state: parseStateFromCapabilities(device.capabilities),
+        });
       }
     }),
   );
-  return withState;
+  return withSyntheticGroups(withState);
 }
 
 export async function fetchDeviceState(
@@ -63,6 +87,10 @@ export async function fetchDeviceState(
       color: { r: 255, g: 255, b: 255 },
       online: true,
     };
+  }
+
+  if (isGoveeGroupSku(sku)) {
+    throw new Error("Groups do not support state polling");
   }
 
   const res = await api("/api/govee/state", {

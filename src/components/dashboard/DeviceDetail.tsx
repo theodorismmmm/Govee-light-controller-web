@@ -91,7 +91,13 @@ function DeviceDetailInner({
               {device.deviceName || device.sku}
             </h2>
             <p className="mt-1 truncate text-sm text-[var(--fg-dim)]">
-              {device.sku} · {device.device}
+              {device.kind === "sameModeGroup"
+                ? "Same model group · controls all linked lights together"
+                : device.kind === "baseGroup"
+                  ? "Basic group · power, brightness, and color"
+                  : device.kind === "modelGroup"
+                    ? `Same model · ${device.memberCount ?? 0} lights · ${device.sku}`
+                    : `${device.sku} · ${device.device}`}
             </p>
           </div>
           <button
