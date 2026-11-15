@@ -160,18 +160,19 @@ export function ColorWheel({
     <div
       className={`flex flex-col items-center gap-4 ${disabled ? "opacity-45" : ""}`}
     >
-      <div className="relative">
+      <div className="relative overflow-visible">
         <div
-          className="pointer-events-none absolute inset-[-18%] rounded-full opacity-40 blur-2xl"
+          className="pointer-events-none absolute inset-0 rounded-full opacity-40 blur-2xl"
           style={{
             background: `radial-gradient(circle, ${hex}88, transparent 68%)`,
           }}
+          aria-hidden
         />
         <canvas
           ref={canvasRef}
           width={size}
           height={size}
-          className={`relative touch-none rounded-full ${
+          className={`relative z-10 touch-none rounded-full ${
             disabled ? "cursor-not-allowed" : "cursor-crosshair"
           }`}
           onPointerDown={onPointerDown}
