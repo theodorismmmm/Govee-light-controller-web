@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { ColorWheel } from "./ColorWheel";
 import { hexToRgb, rgbToHex } from "@/lib/govee-color";
 
 const SWATCHES = [
@@ -25,53 +27,81 @@ type Props = {
   color: { r: number; g: number; b: number };
   onChange: (color: { r: number; g: number; b: number }) => void;
   disabled?: boolean;
+  resetToken?: string;
 };
 
-export function ColorControls({ color, onChange, disabled }: Props) {
+export function ColorControls({
+  color,
+  onChange,
+  disabled,
+  resetToken = "",
+}: Props) {
   const hex = rgbToHex(color.r, color.g, color.b);
+  const [localToken, setLocalToken] = useState(0);
+  const wheelKey = `${resetToken}-${localToken}`;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="flex items-center justify-between gap-4">
         <div>
           <div className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--fg-dim)]">
-            Color
+            Color wheel
           </div>
-          <div className="mt-1 font-mono text-sm text-[var(--fg-muted)]">{hex}</div>
+          <p className="mt-1 text-sm text-[var(--fg-muted)]">
+            Drag to set hue and saturation
+          </p>
         </div>
-        <label className="relative h-12 w-12 overflow-hidden rounded-full border border-white/20">
-          <span
-            className="absolute inset-0"
-            style={{ background: hex }}
-          />
+        <label className="relative h-11 w-11 overflow-hidden rounded-full border border-white/20">
+          <span className="absolute inset-0" style={{ background: hex }} />
           <input
             type="color"
             value={hex}
             disabled={disabled}
-            onChange={(e) => onChange(hexToRgb(e.target.value))}
+            onChange={(e) => {
+              onChange(hexToRgb(e.target.value));
+              setLocalToken((n) => n + 1);
+            }}
             className="absolute inset-0 cursor-pointer opacity-0 disabled:cursor-not-allowed"
-            aria-label="Pick color"
+            aria-label="Pick exact color"
           />
         </label>
       </div>
 
-      <div className="color-wheel-grid">
-        {SWATCHES.map((swatch) => {
-          const active = swatch.toLowerCase() === hex.toLowerCase();
-          return (
-            <button
-              key={swatch}
-              type="button"
-              disabled={disabled}
-              aria-label={`Set color ${swatch}`}
-              onClick={() => onChange(hexToRgb(swatch))}
-              className={`aspect-square rounded-full border transition ${
-                active ? "border-white scale-110" : "border-white/20 hover:border-white/50"
-              } disabled:opacity-40`}
-              style={{ background: swatch }}
-            />
-          );
-        })}
+      <ColorWheel
+        key={wheelKey}
+        color={color}
+        onChange={onChange}
+        disabled={disabled}
+        size={268}
+      />
+
+      <div>
+        <div className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--fg-dim)]">
+          Quick colors
+        </div>
+        <div className="color-wheel-grid">
+          {SWATCHES.map((swatch) => {
+            const active = swatch.toLowerCase() === hex.toLowerCase();
+            return (
+              <button
+                key={swatch}
+                type="button"
+                disabled={disabled}
+                aria-label={`Set color ${swatch}`}
+                onClick={() => {
+                  onChange(hexToRgb(swatch));
+                  setLocalToken((n) => n + 1);
+                }}
+                className={`aspect-square rounded-full border transition ${
+                  active
+                    ? "scale-110 border-white"
+                    : "border-white/20 hover:border-white/50"
+                } disabled:opacity-40`}
+                style={{ background: swatch }}
+              />
+            );
+          })}
+        </div>
       </div>
     </div>
   );

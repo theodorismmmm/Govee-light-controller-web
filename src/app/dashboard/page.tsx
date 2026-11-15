@@ -29,6 +29,7 @@ import {
   isDemoMode,
   saveSchedules,
 } from "@/lib/storage";
+import { rgbToHex } from "@/lib/govee-color";
 import type { DeviceView, Schedule } from "@/lib/types";
 
 type Tab = "devices" | "schedules";
@@ -256,13 +257,18 @@ export default function DashboardPage() {
     );
   }
 
+  const selectedHex = selected
+    ? rgbToHex(selected.state.color.r, selected.state.color.g, selected.state.color.b)
+    : null;
+
   return (
     <div className="min-h-screen bg-[var(--bg)]">
       <div
-        className="pointer-events-none fixed inset-0 opacity-70"
+        className="pointer-events-none fixed inset-0 opacity-80 transition-all duration-500"
         style={{
-          background:
-            "radial-gradient(ellipse 50% 30% at 10% 0%, rgba(255,255,255,0.07), transparent 55%), radial-gradient(ellipse 40% 25% at 90% 10%, rgba(255,255,255,0.05), transparent 50%)",
+          background: selectedHex && selected?.state.power
+            ? `radial-gradient(ellipse 55% 40% at 80% 20%, ${selectedHex}33, transparent 60%), radial-gradient(ellipse 50% 30% at 10% 0%, rgba(255,255,255,0.07), transparent 55%)`
+            : "radial-gradient(ellipse 50% 30% at 10% 0%, rgba(255,255,255,0.07), transparent 55%), radial-gradient(ellipse 40% 25% at 90% 10%, rgba(255,255,255,0.05), transparent 50%)",
         }}
       />
 
@@ -354,7 +360,7 @@ export default function DashboardPage() {
         )}
 
         {tab === "devices" ? (
-          <div className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
+          <div className="grid gap-6 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
             <section>
               <div className="mb-4 flex items-end justify-between gap-3">
                 <div>
@@ -364,7 +370,7 @@ export default function DashboardPage() {
                   <p className="mt-1 text-sm text-[var(--fg-muted)]">
                     {loading
                       ? "Loading devices…"
-                      : `${devices.length} connected`}
+                      : `${devices.length} connected · pick one to control`}
                   </p>
                 </div>
                 <button
