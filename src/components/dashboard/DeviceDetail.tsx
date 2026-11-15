@@ -146,29 +146,49 @@ function DeviceDetailInner({
           role="tablist"
           aria-label="Light controls"
           className="relative z-20 mt-8 flex gap-1 rounded-full border border-white/10 bg-black/30 p-1"
+          onKeyDown={(e) => {
+            const keys = ["ArrowLeft", "ArrowRight", "Home", "End"] as const;
+            if (!keys.includes(e.key as (typeof keys)[number])) return;
+            e.preventDefault();
+            const index = visiblePanels.findIndex((p) => p.id === activePanel);
+            if (index < 0) return;
+            let next = index;
+            if (e.key === "ArrowRight") next = (index + 1) % visiblePanels.length;
+            if (e.key === "ArrowLeft") {
+              next = (index - 1 + visiblePanels.length) % visiblePanels.length;
+            }
+            if (e.key === "Home") next = 0;
+            if (e.key === "End") next = visiblePanels.length - 1;
+            const nextId = visiblePanels[next]?.id;
+            if (!nextId) return;
+            setPanel(nextId);
+            queueMicrotask(() => {
+              document.getElementById(`tab-${nextId}`)?.focus();
+            });
+          }}
         >
-          {visiblePanels.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              role="tab"
-              id={`tab-${item.id}`}
-              aria-selected={activePanel === item.id}
-              aria-controls={`panel-${item.id}`}
-              onClick={() => setPanel(item.id)}
-              onPointerDown={(e) => {
-                e.preventDefault();
-                setPanel(item.id);
-              }}
-              className={`relative z-20 flex-1 rounded-full py-2.5 text-sm font-medium transition ${
-                activePanel === item.id
-                  ? "bg-white text-black"
-                  : "text-[var(--fg-muted)] hover:text-white"
-              }`}
-            >
-              {item.label}
-            </button>
-          ))}
+          {visiblePanels.map((item) => {
+            const selected = activePanel === item.id;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                role="tab"
+                id={`tab-${item.id}`}
+                aria-selected={selected}
+                aria-controls={`panel-${item.id}`}
+                tabIndex={selected ? 0 : -1}
+                onClick={() => setPanel(item.id)}
+                className={`relative z-20 flex-1 rounded-full py-2.5 text-sm font-medium transition ${
+                  selected
+                    ? "bg-white text-black"
+                    : "text-[var(--fg-muted)] hover:text-white"
+                }`}
+              >
+                {item.label}
+              </button>
+            );
+          })}
         </div>
 
         <div className="relative z-10 mt-6 min-h-[360px] overflow-hidden">
