@@ -142,13 +142,25 @@ function DeviceDetailInner({
           />
         </div>
 
-        <div className="mt-8 flex gap-1 rounded-full border border-white/10 bg-black/30 p-1">
+        <div
+          role="tablist"
+          aria-label="Light controls"
+          className="relative z-20 mt-8 flex gap-1 rounded-full border border-white/10 bg-black/30 p-1"
+        >
           {visiblePanels.map((item) => (
             <button
               key={item.id}
               type="button"
+              role="tab"
+              id={`tab-${item.id}`}
+              aria-selected={activePanel === item.id}
+              aria-controls={`panel-${item.id}`}
               onClick={() => setPanel(item.id)}
-              className={`flex-1 rounded-full py-2.5 text-sm font-medium transition ${
+              onPointerDown={(e) => {
+                e.preventDefault();
+                setPanel(item.id);
+              }}
+              className={`relative z-20 flex-1 rounded-full py-2.5 text-sm font-medium transition ${
                 activePanel === item.id
                   ? "bg-white text-black"
                   : "text-[var(--fg-muted)] hover:text-white"
@@ -159,18 +171,29 @@ function DeviceDetailInner({
           ))}
         </div>
 
-        <div className="mt-6 min-h-[360px]">
+        <div className="relative z-10 mt-6 min-h-[360px] overflow-hidden">
           {activePanel === "color" && supportsColor ? (
-            <ColorControls
-              color={device.state.color}
-              disabled={busy || !device.state.power}
-              onChange={onColor}
-              resetToken={`${deviceKey(device)}-${wheelReset}`}
-            />
+            <div
+              role="tabpanel"
+              id="panel-color"
+              aria-labelledby="tab-color"
+            >
+              <ColorControls
+                color={device.state.color}
+                disabled={busy || !device.state.power}
+                onChange={onColor}
+                resetToken={`${deviceKey(device)}-${wheelReset}`}
+              />
+            </div>
           ) : null}
 
           {activePanel === "white" && supportsTem ? (
-            <div className="space-y-6">
+            <div
+              role="tabpanel"
+              id="panel-white"
+              aria-labelledby="tab-white"
+              className="space-y-6"
+            >
               <div>
                 <div className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--fg-dim)]">
                   Color temperature
@@ -252,7 +275,12 @@ function DeviceDetailInner({
           ) : null}
 
           {activePanel === "presets" ? (
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-2">
+            <div
+              role="tabpanel"
+              id="panel-presets"
+              aria-labelledby="tab-presets"
+              className="grid grid-cols-2 gap-2 sm:grid-cols-2"
+            >
               {PRESETS.map((preset) => {
                 const bg = `rgb(${preset.color.r}, ${preset.color.g}, ${preset.color.b})`;
                 return (
