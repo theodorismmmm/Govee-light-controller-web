@@ -44,17 +44,29 @@ export async function listDevices(apiKey: string): Promise<GoveeDevice[]> {
     throw new Error(json.message || `Failed to load devices (${res.status})`);
   }
   const devices = Array.isArray(json.data) ? json.data : [];
-  return devices.filter(
-    (d) =>
+  return devices.filter((d) => {
+    if (!d?.sku || !d?.device) return false;
+    if (
+      d.sku === "DreamViewScenic" ||
+      d.sku === "DreamView" ||
+      d.sku === "Shortcut"
+    ) {
+      return false;
+    }
+    if (d.sku === "SameModeGroup" || d.sku === "BaseGroup") return true;
+    return (
       !d.type ||
       d.type.includes("light") ||
-      d.capabilities?.some(
-        (c) =>
-          c.instance === "brightness" ||
-          c.instance === "colorRgb" ||
-          c.instance === "powerSwitch",
-      ),
-  );
+      Boolean(
+        d.capabilities?.some(
+          (c) =>
+            c.instance === "brightness" ||
+            c.instance === "colorRgb" ||
+            c.instance === "powerSwitch",
+        ),
+      )
+    );
+  });
 }
 
 export async function getDeviceState(

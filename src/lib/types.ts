@@ -26,8 +26,17 @@ export type DeviceState = {
   online: boolean;
 };
 
+export type DeviceKind =
+  | "device"
+  | "sameModeGroup"
+  | "baseGroup"
+  | "modelGroup";
+
 export type DeviceView = GoveeDevice & {
   state: DeviceState;
+  kind?: DeviceKind;
+  memberKeys?: string[];
+  memberCount?: number;
 };
 
 export type Preset = {

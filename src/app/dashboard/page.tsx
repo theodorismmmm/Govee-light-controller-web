@@ -30,6 +30,7 @@ import {
   saveSchedules,
 } from "@/lib/storage";
 import { rgbToHex } from "@/lib/govee-color";
+import { controlTargets } from "@/lib/groups";
 import type { DeviceView, Schedule } from "@/lib/types";
 
 type Tab = "devices" | "schedules";
@@ -136,13 +137,18 @@ export default function DashboardPage() {
     saveSchedules(next);
   }
 
-  function patchDevice(
-    key: string,
+  function patchDevices(
+    keys: string[],
     patch: (device: DeviceView) => DeviceView,
   ) {
+    const keySet = new Set(keys);
     setDevices((prev) =>
-      prev.map((d) => (deviceKey(d) === key ? patch(d) : d)),
+      prev.map((d) => (keySet.has(deviceKey(d)) ? patch(d) : d)),
     );
+  }
+
+  function targetsFor(device: DeviceView): DeviceView[] {
+    return controlTargets(device, devices);
   }
 
   async function withBusy(fn: () => Promise<void>) {
@@ -158,90 +164,117 @@ export default function DashboardPage() {
     }
   }
 
+  async function applyToTargets(
+    source: DeviceView,
+    run: (target: DeviceView) => Promise<void>,
+    patch: (device: DeviceView) => DeviceView,
+  ) {
+    const targets = targetsFor(source);
+    const keys = [
+      deviceKey(source),
+      ...targets.map((t) => deviceKey(t)),
+    ];
+    patchDevices(keys, patch);
+    await withBusy(async () => {
+      const results = await Promise.allSettled(targets.map((t) => run(t)));
+      const failed = results.find((r) => r.status === "rejected");
+      if (failed && failed.status === "rejected") {
+        throw failed.reason instanceof Error
+          ? failed.reason
+          : new Error("Group control failed");
+      }
+    });
+  }
+
   async function togglePower(device: DeviceView) {
     const next = !device.state.power;
-    const key = deviceKey(device);
-    patchDevice(key, (d) => ({
-      ...d,
-      state: { ...d.state, power: next },
-    }));
-    await withBusy(async () => {
-      await setPower(device.sku, device.device, next);
-    });
+    await applyToTargets(
+      device,
+      (target) => setPower(target.sku, target.device, next),
+      (d) => ({ ...d, state: { ...d.state, power: next } }),
+    );
   }
 
   async function handleBrightness(value: number) {
     if (!selected) return;
-    const key = deviceKey(selected);
-    patchDevice(key, (d) => ({
-      ...d,
-      state: { ...d.state, brightness: value, power: true },
-    }));
-    await withBusy(async () => {
-      if (!selected.state.power) {
-        await setPower(selected.sku, selected.device, true);
-      }
-      await setBrightness(selected.sku, selected.device, value);
-    });
+    await applyToTargets(
+      selected,
+      async (target) => {
+        if (!target.state.power) {
+          await setPower(target.sku, target.device, true);
+        }
+        await setBrightness(target.sku, target.device, value);
+      },
+      (d) => ({
+        ...d,
+        state: { ...d.state, brightness: value, power: true },
+      }),
+    );
   }
 
   async function handleColor(color: { r: number; g: number; b: number }) {
     if (!selected) return;
-    const key = deviceKey(selected);
-    patchDevice(key, (d) => ({
-      ...d,
-      state: { ...d.state, color, power: true },
-    }));
-    await withBusy(async () => {
-      if (!selected.state.power) {
-        await setPower(selected.sku, selected.device, true);
-      }
-      await setColor(selected.sku, selected.device, color);
-    });
+    await applyToTargets(
+      selected,
+      async (target) => {
+        if (!target.state.power) {
+          await setPower(target.sku, target.device, true);
+        }
+        await setColor(target.sku, target.device, color);
+      },
+      (d) => ({
+        ...d,
+        state: { ...d.state, color, power: true },
+      }),
+    );
   }
 
   async function handleColorTem(kelvin: number) {
     if (!selected) return;
-    const key = deviceKey(selected);
-    patchDevice(key, (d) => ({
-      ...d,
-      state: { ...d.state, colorTem: kelvin, power: true },
-    }));
-    await withBusy(async () => {
-      if (!selected.state.power) {
-        await setPower(selected.sku, selected.device, true);
-      }
-      await setColorTemperature(selected.sku, selected.device, kelvin);
-    });
+    await applyToTargets(
+      selected,
+      async (target) => {
+        if (!target.state.power) {
+          await setPower(target.sku, target.device, true);
+        }
+        await setColorTemperature(target.sku, target.device, kelvin);
+      },
+      (d) => ({
+        ...d,
+        state: { ...d.state, colorTem: kelvin, power: true },
+      }),
+    );
   }
 
   async function handlePreset(presetId: string) {
     if (!selected) return;
     const preset = getPreset(presetId);
     if (!preset) return;
-    const key = deviceKey(selected);
-    patchDevice(key, (d) => ({
-      ...d,
-      state: {
-        ...d.state,
-        power: true,
-        color: preset.color,
-        brightness: preset.brightness,
-        colorTem: preset.colorTem ?? d.state.colorTem,
+    await applyToTargets(
+      selected,
+      async (target) => {
+        await setPower(target.sku, target.device, true);
+        await setColor(target.sku, target.device, preset.color);
+        await setBrightness(target.sku, target.device, preset.brightness);
+        if (preset.colorTem) {
+          await setColorTemperature(
+            target.sku,
+            target.device,
+            preset.colorTem,
+          );
+        }
       },
-    }));
-    await withBusy(async () => {
-      await setPower(selected.sku, selected.device, true);
-      await setColor(selected.sku, selected.device, preset.color);
-      await setBrightness(selected.sku, selected.device, preset.brightness);
-      if (preset.colorTem) {
-        await setColorTemperature(
-          selected.sku,
-          selected.device,
-          preset.colorTem,
-        );
-      }
-    });
+      (d) => ({
+        ...d,
+        state: {
+          ...d.state,
+          power: true,
+          color: preset.color,
+          brightness: preset.brightness,
+          colorTem: preset.colorTem ?? d.state.colorTem,
+        },
+      }),
+    );
   }
 
   function signOut() {
@@ -396,17 +429,36 @@ export default function DashboardPage() {
                   No lights found for this API key.
                 </div>
               ) : (
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {devices.map((device) => {
-                    const key = deviceKey(device);
+                <div className="space-y-6">
+                  {(["groups", "lights"] as const).map((section) => {
+                    const items = devices.filter((d) =>
+                      section === "groups"
+                        ? d.kind === "sameModeGroup" ||
+                          d.kind === "baseGroup" ||
+                          d.kind === "modelGroup"
+                        : d.kind === "device" || !d.kind,
+                    );
+                    if (items.length === 0) return null;
                     return (
-                      <DeviceCard
-                        key={key}
-                        device={device}
-                        selected={selectedKey === key}
-                        onSelect={() => setSelectedKey(key)}
-                        onTogglePower={() => void togglePower(device)}
-                      />
+                      <div key={section}>
+                        <div className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--fg-dim)]">
+                          {section === "groups" ? "Groups" : "Individual lights"}
+                        </div>
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          {items.map((device) => {
+                            const key = deviceKey(device);
+                            return (
+                              <DeviceCard
+                                key={key}
+                                device={device}
+                                selected={selectedKey === key}
+                                onSelect={() => setSelectedKey(key)}
+                                onTogglePower={() => void togglePower(device)}
+                              />
+                            );
+                          })}
+                        </div>
+                      </div>
                     );
                   })}
                 </div>
@@ -419,15 +471,14 @@ export default function DashboardPage() {
                 busy={busy}
                 onPower={(on) => {
                   if (!selected) return;
-                  void (async () => {
-                    patchDevice(deviceKey(selected), (d) => ({
+                  void applyToTargets(
+                    selected,
+                    (target) => setPower(target.sku, target.device, on),
+                    (d) => ({
                       ...d,
                       state: { ...d.state, power: on },
-                    }));
-                    await withBusy(() =>
-                      setPower(selected.sku, selected.device, on),
-                    );
-                  })();
+                    }),
+                  );
                 }}
                 onBrightness={(v) => void handleBrightness(v)}
                 onColor={(c) => void handleColor(c)}

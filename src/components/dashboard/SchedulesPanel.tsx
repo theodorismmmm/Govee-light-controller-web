@@ -24,9 +24,13 @@ export function SchedulesPanel({ devices, schedules, onChange }: Props) {
   const [presetId, setPresetId] = useState(PRESETS[0]?.id ?? "warm-white");
   const [color, setColor] = useState("#ffb347");
 
-  const allKeys = useMemo(
-    () => devices.map((d) => deviceKey(d)),
+  const lightDevices = useMemo(
+    () => devices.filter((d) => d.kind === "device" || !d.kind),
     [devices],
+  );
+  const allKeys = useMemo(
+    () => lightDevices.map((d) => deviceKey(d)),
+    [lightDevices],
   );
 
   function toggleDay(day: number) {
@@ -164,7 +168,7 @@ export function SchedulesPanel({ devices, schedules, onChange }: Props) {
               >
                 All lights
               </button>
-              {devices.map((device) => {
+              {lightDevices.map((device) => {
                 const key = deviceKey(device);
                 const active = deviceKeys.includes(key);
                 return (

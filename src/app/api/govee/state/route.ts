@@ -10,6 +10,12 @@ export async function POST(request: Request) {
     if (body.sku.length > 64 || body.device.length > 128) {
       return Response.json({ error: "Invalid identifiers" }, { status: 400 });
     }
+    if (body.sku === "SameModeGroup" || body.sku === "BaseGroup") {
+      return Response.json(
+        { error: "Groups do not support state polling" },
+        { status: 400 },
+      );
+    }
     const state = await getDeviceState(apiKey, body.sku, body.device);
     return Response.json(
       { state },
