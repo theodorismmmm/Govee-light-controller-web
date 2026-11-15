@@ -2,10 +2,12 @@ import type { DeviceView } from "./types";
 
 export const MOCK_DEVICES: DeviceView[] = [
   {
+    provider: "govee",
     sku: "H605C",
     device: "AA:BB:CC:DD:EE:01",
     deviceName: "Living Room Lamp",
     type: "devices.types.light",
+    kind: "device",
     capabilities: [
       { type: "devices.capabilities.on_off", instance: "powerSwitch" },
       { type: "devices.capabilities.range", instance: "brightness" },
@@ -21,10 +23,12 @@ export const MOCK_DEVICES: DeviceView[] = [
     },
   },
   {
+    provider: "govee",
     sku: "H605C",
     device: "AA:BB:CC:DD:EE:05",
     deviceName: "Living Room Lamp 2",
     type: "devices.types.light",
+    kind: "device",
     capabilities: [
       { type: "devices.capabilities.on_off", instance: "powerSwitch" },
       { type: "devices.capabilities.range", instance: "brightness" },
@@ -40,9 +44,11 @@ export const MOCK_DEVICES: DeviceView[] = [
     },
   },
   {
+    provider: "govee",
     sku: "SameModeGroup",
     device: "90010001",
     deviceName: "Living Room Pair",
+    kind: "sameModeGroup",
     capabilities: [
       { type: "devices.capabilities.on_off", instance: "powerSwitch" },
       { type: "devices.capabilities.range", instance: "brightness" },
@@ -58,10 +64,52 @@ export const MOCK_DEVICES: DeviceView[] = [
     },
   },
   {
+    provider: "lifx",
+    sku: "LIFX A19",
+    device: "d073d5demo0001",
+    deviceName: "Hallway Bulb",
+    type: "devices.types.light",
+    kind: "device",
+    capabilities: [
+      { type: "devices.capabilities.on_off", instance: "powerSwitch" },
+      { type: "devices.capabilities.range", instance: "brightness" },
+      { type: "devices.capabilities.color_setting", instance: "colorRgb" },
+      { type: "devices.capabilities.color_setting", instance: "colorTemperatureK" },
+    ],
+    state: {
+      power: true,
+      brightness: 40,
+      color: { r: 255, g: 220, b: 180 },
+      colorTem: 3500,
+      online: true,
+    },
+  },
+  {
+    provider: "lifx",
+    sku: "LIFX Mini",
+    device: "d073d5demo0002",
+    deviceName: "Studio Spot",
+    type: "devices.types.light",
+    kind: "device",
+    capabilities: [
+      { type: "devices.capabilities.on_off", instance: "powerSwitch" },
+      { type: "devices.capabilities.range", instance: "brightness" },
+      { type: "devices.capabilities.color_setting", instance: "colorRgb" },
+    ],
+    state: {
+      power: false,
+      brightness: 25,
+      color: { r: 120, g: 160, b: 255 },
+      online: true,
+    },
+  },
+  {
+    provider: "govee",
     sku: "H615A",
     device: "AA:BB:CC:DD:EE:02",
     deviceName: "Desk Strip",
     type: "devices.types.light",
+    kind: "device",
     capabilities: [
       { type: "devices.capabilities.on_off", instance: "powerSwitch" },
       { type: "devices.capabilities.range", instance: "brightness" },
@@ -75,10 +123,12 @@ export const MOCK_DEVICES: DeviceView[] = [
     },
   },
   {
+    provider: "govee",
     sku: "H6008",
     device: "AA:BB:CC:DD:EE:03",
     deviceName: "Bedroom Bulb",
     type: "devices.types.light",
+    kind: "device",
     capabilities: [
       { type: "devices.capabilities.on_off", instance: "powerSwitch" },
       { type: "devices.capabilities.range", instance: "brightness" },
@@ -90,24 +140,6 @@ export const MOCK_DEVICES: DeviceView[] = [
       brightness: 20,
       color: { r: 255, g: 120, b: 40 },
       colorTem: 2700,
-      online: true,
-    },
-  },
-  {
-    sku: "H61E1",
-    device: "AA:BB:CC:DD:EE:04",
-    deviceName: "Kitchen Under-cabinet",
-    type: "devices.types.light",
-    capabilities: [
-      { type: "devices.capabilities.on_off", instance: "powerSwitch" },
-      { type: "devices.capabilities.range", instance: "brightness" },
-      { type: "devices.capabilities.color_setting", instance: "colorTemperatureK" },
-    ],
-    state: {
-      power: true,
-      brightness: 88,
-      color: { r: 255, g: 245, b: 230 },
-      colorTem: 4500,
       online: true,
     },
   },

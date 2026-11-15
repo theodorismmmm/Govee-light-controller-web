@@ -16,6 +16,7 @@ export type GoveeDevice = {
   deviceName: string;
   type?: string;
   capabilities?: GoveeCapability[];
+  provider?: "govee" | "lifx";
 };
 
 export type DeviceState = {
@@ -37,6 +38,7 @@ export type DeviceView = GoveeDevice & {
   kind?: DeviceKind;
   memberKeys?: string[];
   memberCount?: number;
+  provider: "govee" | "lifx";
 };
 
 export type Preset = {
