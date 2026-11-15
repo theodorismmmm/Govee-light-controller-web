@@ -61,7 +61,10 @@ export default function Home() {
           <p className="animate-rise mb-5 text-xs font-medium uppercase tracking-[0.28em] text-[var(--fg-dim)]">
             Multi-provider light control
           </p>
-          <h1 className="animate-rise-delay-1 overflow-visible pb-[0.14em] font-[family-name:var(--font-syne)] text-[clamp(3.4rem,12vw,7.5rem)] font-extrabold leading-[0.95] tracking-[-0.03em] text-white">
+          <h1
+            className="animate-rise-delay-1 font-[family-name:var(--font-syne)] text-[clamp(3.4rem,12vw,7.5rem)] font-extrabold tracking-[-0.03em] text-white"
+            style={{ lineHeight: 1.15, overflow: "visible", paddingBottom: "0.12em" }}
+          >
             OpenLights
           </h1>
           <p className="animate-rise-delay-2 mt-6 max-w-xl text-lg leading-relaxed text-[var(--fg-muted)] md:text-xl">

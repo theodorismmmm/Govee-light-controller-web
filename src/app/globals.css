@@ -128,10 +128,12 @@ textarea {
 
 .animate-rise {
   animation: rise 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+  overflow: visible;
 }
 
 .animate-rise-delay-1 {
   animation: rise 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.12s both;
+  overflow: visible;
 }
 
 .animate-rise-delay-2 {
