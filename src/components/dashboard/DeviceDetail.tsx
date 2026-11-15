@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ColorControls } from "./ColorControls";
 import { kelvinToRgb, rgbToHex } from "@/lib/govee-color";
+import { getProvider } from "@/lib/providers/types";
 import { PRESETS } from "@/lib/presets";
 import type { DeviceView } from "@/lib/types";
 import { deviceKey } from "@/lib/types";
@@ -91,13 +92,15 @@ function DeviceDetailInner({
               {device.deviceName || device.sku}
             </h2>
             <p className="mt-1 truncate text-sm text-[var(--fg-dim)]">
+              {getProvider(device.provider ?? "govee").name}
+              {" · "}
               {device.kind === "sameModeGroup"
-                ? "Same model group · controls all linked lights together"
+                ? "Same model group · controls linked lights together"
                 : device.kind === "baseGroup"
                   ? "Basic group · power, brightness, and color"
                   : device.kind === "modelGroup"
                     ? `Same model · ${device.memberCount ?? 0} lights · ${device.sku}`
-                    : `${device.sku} · ${device.device}`}
+                    : `${device.sku}`}
             </p>
           </div>
           <button

@@ -5,7 +5,7 @@ import {
   setBrightness,
   setColor,
   setPower,
-} from "@/lib/govee-client";
+} from "@/lib/lights-client";
 import { getPreset } from "@/lib/presets";
 import { getSchedules, saveSchedules } from "@/lib/storage";
 import type { DeviceView, Schedule } from "@/lib/types";
@@ -29,19 +29,25 @@ async function applySchedule(
       : devices.filter((d) => schedule.deviceKeys.includes(deviceKey(d)));
 
   for (const device of targets) {
+    const provider = device.provider ?? "govee";
     const action = schedule.action;
     if (action.kind === "power") {
-      await setPower(device.sku, device.device, action.value);
+      await setPower(device.sku, device.device, action.value, provider);
     } else if (action.kind === "brightness") {
-      await setBrightness(device.sku, device.device, action.value);
+      await setBrightness(device.sku, device.device, action.value, provider);
     } else if (action.kind === "color") {
-      await setColor(device.sku, device.device, action.value);
+      await setColor(device.sku, device.device, action.value, provider);
     } else if (action.kind === "preset") {
       const preset = getPreset(action.presetId);
       if (!preset) continue;
-      await setColor(device.sku, device.device, preset.color);
-      await setBrightness(device.sku, device.device, preset.brightness);
-      await setPower(device.sku, device.device, true);
+      await setColor(device.sku, device.device, preset.color, provider);
+      await setBrightness(
+        device.sku,
+        device.device,
+        preset.brightness,
+        provider,
+      );
+      await setPower(device.sku, device.device, true, provider);
     }
   }
 }

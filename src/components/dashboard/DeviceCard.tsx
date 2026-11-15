@@ -1,6 +1,7 @@
 "use client";
 
 import { rgbToHex } from "@/lib/govee-color";
+import { getProvider } from "@/lib/providers/types";
 import type { DeviceView } from "@/lib/types";
 
 type Props = {
@@ -8,6 +9,7 @@ type Props = {
   selected: boolean;
   onSelect: () => void;
   onTogglePower: () => void;
+  compact?: boolean;
 };
 
 export function DeviceCard({
@@ -15,24 +17,25 @@ export function DeviceCard({
   selected,
   onSelect,
   onTogglePower,
+  compact = false,
 }: Props) {
   const { state } = device;
   const hex = rgbToHex(state.color.r, state.color.g, state.color.b);
-  const glow = state.power
-    ? `0 0 28px ${hex}55, inset 0 0 0 1px rgba(255,255,255,0.08)`
-    : "inset 0 0 0 1px rgba(255,255,255,0.06)";
   const isGroup =
     device.kind === "sameModeGroup" ||
     device.kind === "baseGroup" ||
     device.kind === "modelGroup";
+  const provider = getProvider(device.provider ?? "govee");
   const meta =
     device.kind === "sameModeGroup"
       ? "Same model group"
       : device.kind === "baseGroup"
         ? "Basic group"
         : device.kind === "modelGroup"
-          ? `${device.memberCount ?? 0} lights · ${device.sku}`
-          : `${device.sku} · ${state.online ? "Online" : "Offline"}`;
+          ? `${device.memberCount ?? 0} lights`
+          : state.online
+            ? "Online"
+            : "Offline";
 
   return (
     <div
@@ -45,72 +48,70 @@ export function DeviceCard({
           onSelect();
         }
       }}
-      className={`device-glow relative cursor-pointer overflow-hidden rounded-2xl border bg-[var(--bg-elevated)] p-4 text-left ${
-        selected ? "border-white/40" : "border-white/10"
+      className={`group relative flex cursor-pointer items-center gap-3 border-b border-white/[0.06] px-3 transition ${
+        compact ? "py-2.5" : "py-3.5"
+      } ${
+        selected
+          ? "bg-white/[0.07]"
+          : "hover:bg-white/[0.03]"
       }`}
-      style={{ boxShadow: selected ? glow : undefined }}
       aria-pressed={selected}
       aria-label={`Select ${device.deviceName}`}
     >
-      <div className="relative z-10 flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <div className="truncate font-semibold tracking-tight">
-              {device.deviceName || device.sku}
-            </div>
-            {isGroup ? (
-              <span className="shrink-0 rounded-full border border-white/20 px-2 py-0.5 text-[10px] uppercase tracking-[0.12em] text-[var(--fg-dim)]">
-                Group
-              </span>
-            ) : null}
-          </div>
-          <div className="mt-1 text-xs text-[var(--fg-dim)]">{meta}</div>
-        </div>
+      {selected ? (
+        <span className="absolute inset-y-2 left-0 w-[2px] rounded-full bg-white" />
+      ) : null}
 
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onTogglePower();
-          }}
-          className={`relative h-10 w-10 shrink-0 rounded-full border transition ${
-            state.power
-              ? "border-white bg-white text-black"
-              : "border-white/20 bg-transparent text-white/70 hover:border-white/40"
-          }`}
-          aria-pressed={state.power}
-          aria-label={state.power ? "Turn off" : "Turn on"}
-        >
-          <span
-            className="absolute inset-[7px] rounded-full border-2"
-            style={{
-              borderColor: state.power ? "#09090b" : "currentColor",
-            }}
-          />
-        </button>
+      <div
+        className="h-9 w-9 shrink-0 rounded-full border border-white/12"
+        style={{
+          background: state.power ? hex : "#1a1a1c",
+          boxShadow: state.power ? `0 0 14px ${hex}66` : undefined,
+          opacity: state.power ? 0.25 + state.brightness / 140 : 0.4,
+        }}
+      />
+
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2">
+          <div className="truncate text-sm font-semibold tracking-tight">
+            {device.deviceName || device.sku}
+          </div>
+          {isGroup ? (
+            <span className="shrink-0 text-[10px] uppercase tracking-[0.12em] text-[var(--fg-dim)]">
+              Group
+            </span>
+          ) : null}
+        </div>
+        <div className="mt-0.5 flex items-center gap-2 text-[11px] text-[var(--fg-dim)]">
+          <span>{provider.shortName}</span>
+          <span aria-hidden>·</span>
+          <span className="truncate">{meta}</span>
+          <span aria-hidden>·</span>
+          <span className="tabular-nums">{state.brightness}%</span>
+        </div>
       </div>
 
-      <div className="relative z-10 mt-5 flex items-end justify-between">
-        <div
-          className="h-10 w-10 rounded-full border border-white/15 transition"
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          onTogglePower();
+        }}
+        className={`relative h-9 w-9 shrink-0 rounded-full border transition ${
+          state.power
+            ? "border-white bg-white text-black"
+            : "border-white/20 bg-transparent text-white/70 hover:border-white/40"
+        }`}
+        aria-pressed={state.power}
+        aria-label={state.power ? "Turn off" : "Turn on"}
+      >
+        <span
+          className="absolute inset-[6px] rounded-full border-2"
           style={{
-            background: state.power ? hex : "#1a1a1c",
-            boxShadow: state.power ? `0 0 18px ${hex}88` : undefined,
-            opacity: state.power ? 0.2 + state.brightness / 125 : 0.35,
+            borderColor: state.power ? "#09090b" : "currentColor",
           }}
         />
-        <div className="text-right">
-          <div className="text-2xl font-semibold tabular-nums tracking-tight">
-            {state.brightness}
-            <span className="ml-0.5 text-sm font-medium text-[var(--fg-dim)]">
-              %
-            </span>
-          </div>
-          <div className="text-xs uppercase tracking-[0.14em] text-[var(--fg-dim)]">
-            Brightness
-          </div>
-        </div>
-      </div>
+      </button>
     </div>
   );
 }

@@ -3,24 +3,24 @@ import Link from "next/link";
 const steps = [
   {
     num: "01",
-    title: "Connect your Govee API key",
-    body: "Generate a developer key in your Govee account. OpenLights stores it only in your browser.",
+    title: "Connect a light API",
+    body: "Add a Govee API key or LIFX access token. OpenLights stores credentials only in your browser.",
   },
   {
     num: "02",
-    title: "Discover every light",
-    body: "We call the official Govee Open API, load supported devices, and sync power, color, and brightness.",
+    title: "See every light clearly",
+    body: "Devices from each linked provider appear in one overview — groups and individual lights, ready to control.",
   },
   {
     num: "03",
-    title: "Control like the native app",
-    body: "Tune color and brightness, apply presets, and schedule actions from a clean black-and-white dashboard.",
+    title: "Control with precision",
+    body: "Tune color and brightness, apply presets, and schedule actions from a calm black-and-white dashboard.",
   },
 ];
 
 export default function Home() {
   return (
-    <div className="relative min-h-screen overflow-hidden">
+    <div className="relative min-h-screen overflow-x-hidden">
       <div className="pointer-events-none absolute inset-0">
         <div className="beam absolute -left-[20%] -top-[30%]" />
         <div className="beam beam-secondary absolute right-[-10%] top-[10%]" />
@@ -52,21 +52,24 @@ export default function Home() {
           href="/connect"
           className="text-sm text-[var(--fg-muted)] transition hover:text-white"
         >
-          Sign in with API key
+          Connect API
         </Link>
       </header>
 
       <main className="relative z-10">
         <section className="mx-auto flex min-h-[calc(100vh-88px)] w-full max-w-6xl flex-col justify-center px-6 pb-24 pt-8">
           <p className="animate-rise mb-5 text-xs font-medium uppercase tracking-[0.28em] text-[var(--fg-dim)]">
-            Govee Open API control
+            Multi-provider light control
           </p>
-          <h1 className="animate-rise-delay-1 font-[family-name:var(--font-syne)] text-[clamp(3.4rem,12vw,7.5rem)] font-extrabold leading-[0.9] tracking-[-0.04em] text-white">
+          <h1
+            className="animate-rise-delay-1 font-[family-name:var(--font-syne)] text-[clamp(3.4rem,12vw,7.5rem)] font-extrabold tracking-[-0.03em] text-white"
+            style={{ lineHeight: 1.15, overflow: "visible", paddingBottom: "0.12em" }}
+          >
             OpenLights
           </h1>
           <p className="animate-rise-delay-2 mt-6 max-w-xl text-lg leading-relaxed text-[var(--fg-muted)] md:text-xl">
-            A professional browser dashboard for your Govee lights. Color,
-            brightness, presets, and schedules — powered by your own API key.
+            A professional browser dashboard for Govee and LIFX. Color,
+            brightness, presets, and schedules — powered by your own API keys.
           </p>
           <div className="animate-rise-delay-3 mt-10 flex flex-wrap items-center gap-4">
             <Link
@@ -94,8 +97,8 @@ export default function Home() {
                 How OpenLights works
               </h2>
               <p className="mt-4 text-[var(--fg-muted)]">
-                Built around the official Govee developer API — no account
-                lock-in, no cloud of ours holding your key.
+                Built on official cloud APIs — no account lock-in, no cloud of
+                ours holding your keys.
               </p>
             </div>
 
@@ -119,11 +122,11 @@ export default function Home() {
               {[
                 {
                   title: "Local key storage",
-                  body: "Your Govee API key stays in browser storage on this device.",
+                  body: "API keys stay in browser storage on this device.",
                 },
                 {
-                  title: "Live device sync",
-                  body: "Power, RGB color, Kelvin temperature, and brightness via Govee Open API.",
+                  title: "Govee + LIFX",
+                  body: "One dashboard for both providers, with live power, RGB, Kelvin, and brightness.",
                 },
                 {
                   title: "Schedules",
@@ -154,8 +157,8 @@ export default function Home() {
       </main>
 
       <footer className="relative z-10 border-t border-white/10 px-6 py-8 text-center text-xs text-[var(--fg-dim)]">
-        OpenLights uses the Govee Open API. Govee is a trademark of its
-        respective owner.
+        OpenLights uses the Govee Open API and LIFX Cloud API. Govee and LIFX
+        are trademarks of their respective owners.
       </footer>
     </div>
   );

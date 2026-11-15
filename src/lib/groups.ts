@@ -55,19 +55,22 @@ export function buildSyntheticModelGroups(
   const bySku = new Map<string, DeviceView[]>();
   for (const device of devices) {
     if (!isPhysicalLight(device)) continue;
-    const list = bySku.get(device.sku) ?? [];
+    const groupId = `${device.provider ?? "govee"}::${device.sku}`;
+    const list = bySku.get(groupId) ?? [];
     list.push(device);
-    bySku.set(device.sku, list);
+    bySku.set(groupId, list);
   }
 
   const groups: DeviceView[] = [];
-  for (const [sku, members] of bySku) {
+  for (const members of bySku.values()) {
     if (members.length < 2) continue;
     const lead = members[0];
+    const sku = lead.sku;
     const onCount = members.filter((m) => m.state.power).length;
     groups.push({
+      provider: lead.provider ?? "govee",
       sku,
-      device: `model-group:${sku}`,
+      device: `model-group:${lead.provider ?? "govee"}:${sku}`,
       deviceName: `Same model · ${sku}`,
       type: "openlights.types.model_group",
       capabilities: lead.capabilities,

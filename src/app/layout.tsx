@@ -17,7 +17,7 @@ const manrope = Manrope({
 export const metadata: Metadata = {
   title: "OpenLights",
   description:
-    "Professional Govee light control. Connect your API key, manage colors, brightness, presets, and schedules.",
+    "Professional light control for Govee and LIFX. Connect your API keys, manage colors, brightness, presets, and schedules.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
